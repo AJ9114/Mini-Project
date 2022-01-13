@@ -1,100 +1,145 @@
-/*******************************************************************************************
+/******************************************************************************************
 
-                             Generating Pseudorandom Numbers
-     John Von Newmann's Middle Square Algorithm for Generation of Pseudorandom Numbers
-            Linear Congruential Generator for Generation of Pseudorandom Numbers
-                             Paridhi Agarwal RA2111019010048
+                         RSA Algorithm for Encryption and Decryption
+                     Implementation of the RSA Algorithm for small values
+                                Aditya Jain RA2111019010064
 
-********************************************************************************************/
-#include<stdio.h>
-#include<conio.h>
-#include<math.h>
-#include<stdlib.h>
-int count_digit(long long, int);
-int main()
+*******************************************************************************************/
+#include <stdio.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+int p,q,n,t,flag,e[100],d[100],temp[100],j,m[100],en[100],i;
+char msg[100];
+int prime(long int); // To check whether the number is prime
+void ce(); // To generate e and d values
+long int cd(long int); // To generate the consecutive d value
+void encrypt(); // To encrypt the message
+void decrypt(); // To decrypt the message
+void main()
 {
-	printf("Enter a Choice:\n1) Linear Congruential Generator\n2) Middle Square Algorithm\n");
-	int ch;
-	int xo,x1;
-	int a,c,m;
-	int i,j,n;
-	int array[20];
-	long long seed;
-	long long p;
-        int count;
-	int divisor;
-	int x[20];
-	scanf("%d",&ch);
-	switch(ch)
+	printf("ENTER FIRST PRIME NUMBER\n");
+	scanf("%d",&p);
+	flag=prime(p);
+	if(flag==0)
 	{
-	    case 1:
-	    printf("Enter the seed value: ");
-	    scanf("%d",&xo);
-	    printf("Enter the constant multiplier: ");
-	    scanf("%d",&a);
-	    printf("Enter the increment: ");
-	    scanf("%d",&c);
-	    printf("Enter the modulus: ");
-	    scanf("%d",&m);
-	    printf("How many random numbers you want to generate: ");
-	    scanf("%d",&n);
-	    printf("\n");				
-	    for(i=0;i<n;i++)
-	    {
-    		x1=(a*xo+c) %m;
-		array[i]=x1;
-		xo=x1;
-	    }
-	    printf("The generated random numbers are: ");
-	    for(i=0;i<n;i++)
-	    {
-    		printf("%d",array[i]);
-		printf("\t");
-	    }
-	    getch();
-	    break;
-	    case 2:
-	    printf("Enter a number to generate the random number: ");
-	    scanf("%lld",&seed);
-	    p=seed;
-	    int digit=0;
-            digit=count_digit (p, digit);
-	    count=digit;
-	    printf("How many random number you want to generate: ");
-	    scanf("%d",&n);
-	    printf("\nThe random numbers are:\n");
-	    for(i=0;i<n;i++)
-	    {	
-   	            seed=seed*seed;
-		    p=seed;
-		    digit=0;
-		    digit=count_digit(p,digit);
-		    digit=ceil(digit/4.0);
-		    for(j=0;j<digit;j++)
-		    {
-			seed=seed/10;
-		    }
-		    divisor=pow(10,count);
-		    seed=seed%divisor;
-		    x[i]=seed;
-		    printf("%lld\t",seed);
-	    }
-	    getch();
-            break;
-            default:
-            printf("Wrong Choice!!!");
-            break;
-        }
-	return 0;
-}
-int count_digit(long long seed,int digit)
-{
-	long long p;
-	p=seed;
-	while(p!=0) // Digit count
-	{
-		p=p/10;
-		digit++;
+		printf("WRONG INPUT\n");
+		getch();
+		exit(1);
 	}
-	return digit;
+	printf("ENTER ANOTHER PRIME NUMBER\n");
+	scanf("%d",&q);
+	flag=prime(q);
+	if(flag==0||p==q)
+	{
+		printf("WRONG INPUT\n");
+		getch();
+		exit(1);
+	}
+	printf("ENTER MESSAGE\n");
+	fflush(stdin);
+	scanf("%s",msg);
+	for(i=0;msg[i]!='\0';i++)
+	    m[i]=msg[i];
+	n=p*q; // Public Key
+	t=(p-1)*(q-1); // Private key
+	ce();
+	printf("POSSIBLE VALUES OF e AND d ARE\n");
+	for(i=0;i<j-1;i++)
+	    printf("\n%d\t%d",e[i],d[i]);
+	encrypt();
+	decrypt();
+	getch();
+}
+int prime(long int pr)
+{
+	int i;
+	j=sqrt(pr);
+	for(i=2;i<=j;i++)
+	{
+		if(pr%i==0)
+		    return 0;
+	}
+	return 1;
+}
+void ce()
+{
+	int k;
+	k=0;
+	for(i=2;i<t;i++)
+	{
+		if(t%i==0)
+		    continue;
+		flag=prime(i);
+		if(flag==1&&i!=p&&i!=q)
+		{
+			e[k]=i;
+			flag=cd(e[k]);
+			if(flag>0)
+			{
+				d[k]=flag;
+				k++;
+			}
+			if(k==99)
+			    break;
+		}
+	}
+}
+long int cd(long int x)
+{
+    long int k=1;
+	while(1)
+	{
+		k=k+t;
+		if(k%x==0)
+		    return(k/x);
+	}
+}
+void encrypt()
+{
+	long int pt,ct,key=e[0],k,len;
+	i=0;
+	len=strlen(msg);
+	while(i!=len)
+	{
+		pt=m[i];
+		pt=pt-96;
+		k=1;
+		for(j=0;j<key;j++)
+		{
+			k=k*pt;
+			k=k%n;
+		}
+		temp[i]=k;
+		ct=k+96;
+		en[i]=ct;
+		i++;
+	}
+	en[i]=-1;
+	printf("\nTHE ENCRYPTED MESSAGE IS\n");
+	for(i=0;en[i]!=-1;i++)
+	    printf("%c ",en[i]);
+}
+void decrypt()
+{
+	long int pt,ct,key=d[0],k;
+	i=0;
+	while(en[i]!=-1)
+	{
+		ct=temp[i];
+		k=1;
+		for(j=0;j<key;j++)
+		{
+			k=k*ct;
+			k=k%n;
+		}
+		pt=k+96;
+		m[i]=pt;
+		i++;
+	}
+	m[i]=-1;
+	printf("\nTHE DECRYPTED MESSAGE IS\n");
+	for(i=0;m[i]!=-1;i++)
+	    printf("%c",m[i]);
 }
